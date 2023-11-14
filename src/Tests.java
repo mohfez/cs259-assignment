@@ -2,31 +2,37 @@
 import java.io.*;
 import java.util.SplittableRandom;
 
-public class Tests {
-
-    // Use we use 'static' for all methods to keep things simple, so we can call those methods main
-
+public class Tests
+{
     static void Assert (boolean res) // We use this to test our results - don't delete or modify!
     {
-        if(!res)	{
+        if (!res)
+        {
             System.out.print("Something went wrong.");
             System.exit(0);
         }
     }
 
-    // Copy your vector operations here:
-    // ...
+    static double dot(double[] U, double[] V)
+    {
+        double ans = 0;
+        for (int i = 0; i < V.length; i++)
+        {
+            ans += U[i] * V[i];
+        }
 
+        return ans;
+    }
 
-    static int NumberOfFeatures = ;
-    static double[] toFeatureVector(double id, String genre, double runtime, double year, double imdb, double rt, double budget, double boxOffice) {
-
-
+    static int NumberOfFeatures = 2;
+    static double[] toFeatureVector(double id, String genre, double runtime, double year, double imdb, double rt, double budget, double boxOffice)
+    {
         double[] feature = new double[NumberOfFeatures];
         feature[0] = id;  // We use the movie id as a numeric attribute.
 
-        switch (genre) { // We also use represent each movie genre as an integer number:
-
+        switch (genre)
+        {
+            // We also use represent each movie genre as an integer number:
             case "Action":  feature[1] = 0; break;
             case "Drama":   feature[1] = 1; break;
             case "Romance": feature[1] = 2; break;
@@ -37,38 +43,46 @@ public class Tests {
             case "Thriller": feature[1] = 7; break;
 
         }
+
         // That is all. We don't use any other attributes for prediction.
         return feature;
     }
 
     // We are using the dot product to determine similarity:
-    static double similarity(double[] u, double[] v) {
+    static double similarity(double[] u, double[] v)
+    {
         return dot(u, v);
     }
 
     // We have implemented KNN classifier for the K=1 case only. You are welcome to modify it to support any K
-    static int knnClassify(double[][] trainingData, int[] trainingLabels, double[] testFeature) {
-
+    static int knnClassify(double[][] trainingData, int[] trainingLabels, double[] testFeature)
+    {
         int bestMatch = -1;
         double bestSimilarity = - Double.MAX_VALUE;  // We start with the worst similarity that we can get in Java.
 
-        for (int i = 0; i < trainingData.length; i++) {
+        for (int i = 0; i < trainingData.length; i++)
+        {
             double currentSimilarity = similarity(testFeature, trainingData[i]);
-            if (currentSimilarity > bestSimilarity) {
-
-                Assert(false); // This needs to be replaced by some lines.
+            if (currentSimilarity > bestSimilarity)
+            {
+                currentSimilarity = bestSimilarity;
+                bestMatch = i;
             }
         }
+
         return trainingLabels[bestMatch];
     }
 
 
-    static void loadData(String filePath, double[][] dataFeatures, int[] dataLabels) throws IOException {
-        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
+    static void loadData(String filePath, double[][] dataFeatures, int[] dataLabels) throws IOException
+    {
+        try (BufferedReader br = new BufferedReader(new FileReader(filePath)))
+        {
             String line;
             int idx = 0;
             br.readLine(); // skip header line
-            while ((line = br.readLine()) != null) {
+            while ((line = br.readLine()) != null)
+            {
                 String[] values = line.split(",");
                 // Assuming csv format: MovieID,Title,Genre,Runtime,Year,Lead Actor,Director,IMDB,RT(%),Budget,Box Office Revenue (in million $),Like it
                 double id = Double.parseDouble(values[0]);
@@ -87,30 +101,33 @@ public class Tests {
         }
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args)
+    {
 
         double[][] trainingData = new double[100][];
         int[] trainingLabels = new int[100];
         double[][] testingData = new double[100][];
         int[] testingLabels = new int[100];
-        try {
+        try
+        {
             // You may need to change the path:
-            loadData("C:\\H\\strath\\259\\labs\\training-set.csv", trainingData, trainingLabels);
-            loadData("C:\\H\\strath\\259\\labs\\testing-set.csv", testingData, testingLabels);
+            loadData("src/data/training-set.csv", trainingData, trainingLabels);
+            loadData("src/data/testing-set.csv", testingData, testingLabels);
         }
-        catch (IOException e) {
+        catch (IOException e)
+        {
             System.out.println("Error reading data files: " + e.getMessage());
             return;
         }
 
         // Compute accuracy on the testing set
         int correctPredictions = 0;
-
-        // Add some lines here: ...
+        for (int i = 0; i < 100; i++)
+        {
+            if (knnClassify(trainingData, trainingLabels, testingData[i]) == testingLabels[i]) correctPredictions++;
+        }
 
         double accuracy = (double) correctPredictions / testingData.length * 100;
         System.out.printf("A: %.2f%%\n", accuracy);
-
     }
-
 }

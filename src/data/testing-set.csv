@@ -1,0 +1,101 @@
+MovieID,Title,Genre,Runtime,Year,Lead Actor,Director,IMDB,RT (%),Budget,Box Office Revenue (in million $),Like it
+101,Time's Whisper,Sci-Fi,117,2022,Tom Hiddleston,Alex Garland,7.2,81,142,118,1
+102,Warrior's Charge,Action,111,2023,Jason Momoa,Guy Ritchie,6.7,76,138,123,0
+103,Sapphire Love,Romance,102,2021,Keira Knightley,Sofia Coppola,7.6,85,57,63,0
+104,Echoes in Silence,Drama,106,2022,Cate Blanchett,Joel Coen,6.8,77,47,33,0
+105,Realm's Quest,Adventure,120,2021,Samuel L. Jackson,Tim Burton,8.1,89,148,490,1
+106,Hallow's Veil,Horror,95,2023,Kate Winslet,Mike Flanagan,6.1,72,28,60,1
+107,Highway Solitude,Drama,108,2023,Joaquin Phoenix,Ethan Coen,7.3,84,67,83,0
+108,Oasis of Fate,Adventure,124,2022,Johnny Depp,Sam Raimi,7.9,87,139,473,1
+109,Dawn Patrol,Action,113,2021,Chris Pratt,Zack Snyder,7,79,132,112,0
+110,Harbor's Lullaby,Romance,100,2023,Rachel McAdams,Barry Jenkins,7.8,86,58,68,1
+111,Galaxy's Shadow,Sci-Fi,118,2021,Mark Ruffalo,Luc Besson,6.9,78,143,108,0
+112,Labyrinth Lost,Mystery,99,2023,Tilda Swinton,Bong Joon-ho,7.4,82,71,88,0
+113,Siege Warfare,Action,108,2022,Idris Elba,Matthew Vaughn,6.8,75,128,100,1
+114,Lakeside Memory,Romance,105,2021,Amy Adams,Todd Haynes,7.7,85,53,53,1
+115,Terror's Echo,Horror,93,2021,Javier Bardem,Robert Eggers,6.4,73,29,58,0
+116,Empire's Ascent,Adventure,119,2023,Morgan Freeman,Peter Jackson,7.5,82,137,122,1
+117,Nebula's Quest,Sci-Fi,115,2022,Sigourney Weaver,Neill Blomkamp,7.1,80,152,127,1
+118,Past's Echo,Drama,104,2021,Frances McDormand,Gus Van Sant,6.6,74,56,54,0
+119,Chase Unending,Thriller,102,2023,Hugh Jackman,Edgar Wright,6.5,73,123,97,1
+120,Horizon's Reach,Adventure,121,2021,Penélope Cruz,Quentin Tarantino,7.8,84,136,467,1
+121,Nova's Descent,Sci-Fi,117,2023,Natalie Portman,Ridley Scott,7.4,83,141,116,0
+122,Jungle's Wrath,Action,110,2023,Chadwick Boseman,Taika Waititi,6.8,78,135,124,1
+123,Golden Strings,Romance,103,2021,Scarlett Johansson,Lulu Wang,7.9,88,59,66,1
+124,Distant Cries,Drama,105,2022,Viola Davis,Paul Thomas Anderson,7,79,49,37,0
+125,Expedition Unknown,Adventure,123,2023,Chris Hemsworth,Robert Zemeckis,8,90,150,497,1
+126,Shadows' Curse,Horror,96,2022,Daniel Craig,Ari Aster,6.2,70,27,61,0
+127,Desert Mirage,Drama,108,2022,Nicole Kidman,Steven Spielberg,7.6,86,65,84,1
+128,Kingdom's Fall,Adventure,125,2023,Keanu Reeves,Ron Howard,8.2,91,140,482,0
+129,Nightscape,Action,114,2022,Brad Pitt,Christopher Nolan,7.2,81,134,118,1
+130,Starlit Promise,Romance,99,2023,Charlize Theron,Patty Jenkins,7.5,85,54,62,0
+131,Orbit's Edge,Sci-Fi,119,2023,Jeremy Irons,J.J. Abrams,7.3,82,145,110,0
+132,Twisted Fate,Mystery,98,2022,Tessa Thompson,Denis Villeneuve,7.7,88,72,92,0
+133,Frontline,Action,109,2023,Will Smith,David Fincher,6.9,77,129,103,1
+134,Ocean's Whisper,Romance,104,2021,Margot Robbie,David O. Russell,7.6,84,52,50,0
+135,Abyss Watcher,Horror,94,2023,Christian Bale,Jordan Peele,6.5,74,30,59,0
+136,Realm's Edge,Adventure,118,2022,Robert Downey Jr.,Martin Scorsese,7.4,83,138,126,1
+137,Star Cluster,Sci-Fi,116,2021,Gary Oldman,Steven Soderbergh,7,79,146,121,0
+138,Echoing Times,Drama,103,2023,Jessica Chastain,Danny Boyle,6.7,76,55,56,0
+139,Endless Pursuit,Thriller,101,2022,Tom Cruise,Spike Lee,6.6,75,122,98,1
+140,Galactic Odyssey,Adventure,120,2021,Anthony Hopkins,George Lucas,7.7,87,139,464,0
+141,Voyager's Paradox,Sci-Fi,116,2023,Ewan McGregor,James Cameron,7.2,81,143,119,1
+142,Desert Storm,Action,113,2023,Ryan Reynolds,Michael Bay,6.7,77,136,127,0
+143,Crimson Strings,Romance,102,2021,Emma Stone,Ava DuVernay,7.8,87,60,69,1
+144,Fading Echoes,Drama,104,2022,Anne Hathaway,Clint Eastwood,6.9,78,50,39,0
+145,Quest Uncharted,Adventure,121,2021,Henry Cavill,Francis Ford Coppola,8.1,88,151,503,1
+146,Phantom's Grasp,Horror,97,2022,Tom Hardy,Eli Roth,6.3,71,26,64,1
+147,Urban Solace,Drama,107,2023,Cate Blanchett,Ron Howard,7.4,84,64,87,0
+148,Island's End,Adventure,122,2021,Leonardo DiCaprio,Martin Scorsese,8,89,141,491,1
+149,Battlefront,Action,112,2023,Dwayne Johnson,Peter Berg,7.1,80,133,117,0
+150,Twilight Dreams,Romance,101,2022,Jennifer Lawrence,Nancy Meyers,7.6,85,51,57,0
+151,Galactic Pioneers,Sci-Fi,118,2021,Ian McKellen,Bryan Singer,7,79,144,105,0
+152,Web of Deceit,Mystery,97,2022,Angelina Jolie,M. Night Shyamalan,7.5,83,73,95,0
+153,Strike Force,Action,110,2023,Chris Evans,Justin Lin,6.8,76,130,107,0
+154,River's Song,Romance,103,2021,Nicole Kidman,Greta Gerwig,7.7,86,50,49,1
+155,Whispering Shadows,Horror,92,2022,Mel Gibson,John Carpenter,6.4,72,31,57,0
+156,Kingdom's Peak,Adventure,119,2023,Russell Crowe,Wes Anderson,7.6,85,137,128,1
+157,Stellar Frontier,Sci-Fi,115,2021,Benedict Cumberbatch,Guillermo del Toro,7.2,82,147,123,1
+158,Tales Untold,Drama,104,2023,Kate Winslet,David Lynch,6.8,78,54,53,0
+159,Edge of Peril,Thriller,100,2022,Michael Fassbender,Guy Ritchie,6.7,76,121,101,1
+160,Celestial Odyssey,Adventure,118,2021,Brad Pitt,Stanley Kubrick,7.9,88,138,468,1
+161,Nebula's Secrets,Sci-Fi,115,2023,Matthew McConaughey,Luc Besson,7.3,83,148,122,1
+162,Mountain's Wrath,Action,112,2022,Jason Momoa,Kathryn Bigelow,6.9,79,132,109,1
+163,Eternal Embrace,Romance,103,2021,Keira Knightley,Sofia Coppola,7.8,87,58,71,0
+164,Whispers of the Past,Drama,106,2022,Julianne Moore,Darren Aronofsky,7.1,80,53,42,1
+165,Untamed Frontier,Adventure,124,2021,Samuel L. Jackson,Terry Gilliam,8.2,90,152,508,1
+166,Ghoul's Touch,Horror,95,2022,Hugh Jackman,Mike Flanagan,6.1,69,25,66,1
+167,Searing Memoirs,Drama,108,2023,Halle Berry,Quentin Tarantino,7.5,85,63,89,1
+168,Ocean's Veil,Adventure,120,2022,Ralph Fiennes,Tim Burton,8.3,91,142,486,0
+169,Urban Combat,Action,111,2023,Gerard Butler,F. Gary Gray,7,78,131,116,1
+170,Dawn's Lullaby,Romance,100,2021,Meryl Streep,Oliver Stone,7.4,84,57,55,0
+171,Quantum Nexus,Sci-Fi,117,2021,Morgan Freeman,Neill Blomkamp,7.2,81,149,107,1
+172,Veil of Secrets,Mystery,99,2022,Tilda Swinton,Rian Johnson,7.6,86,70,93,0
+173,Rebel's March,Action,109,2021,Arnold Schwarzenegger,Ridley Scott,6.7,74,128,106,0
+174,Sunset's Caress,Romance,104,2022,Sigourney Weaver,Sam Mendes,7.8,87,49,46,0
+175,Beast's Lair,Horror,93,2021,Johnny Depp,David Cronenberg,6.6,73,29,55,0
+176,Sky's Frontier,Adventure,119,2023,John Travolta,Zack Snyder,7.7,86,135,129,0
+177,Cosmic Saga,Sci-Fi,114,2022,Christopher Walken,Ridley Scott,7.3,83,150,125,1
+178,Echoes of Reality,Drama,102,2023,Natalie Portman,Pedro Almodóvar,6.9,79,52,51,0
+179,Danger's Edge,Thriller,99,2021,Liam Neeson,Luc Besson,6.8,77,120,99,1
+180,Starlight Voyage,Adventure,118,2022,Nicolas Cage,Francis Lawrence,7.8,89,136,473,1
+181,Galactic Chronicles,Sci-Fi,117,2023,Jeff Bridges,Steven Spielberg,7.1,82,143,124,0
+182,Wildfire's Path,Action,113,2022,Idris Elba,Tony Scott,6.8,76,139,112,0
+183,Midnight Whispers,Romance,104,2021,Sandra Bullock,Jane Campion,7.7,86,56,72,1
+184,Past's Reflection,Drama,105,2022,Viola Davis,David Fincher,7,78,55,45,0
+185,Jungle's Mystery,Adventure,123,2021,Orlando Bloom,Joe Johnston,8,89,146,499,1
+186,Demon's Shadows,Horror,94,2022,Keanu Reeves,Jordan Peele,6.2,70,28,67,1
+187,City's Pulse,Drama,109,2023,Charlize Theron,Paul Thomas Anderson,7.6,85,62,91,1
+188,Sands of Time,Adventure,119,2022,Ethan Hawke,Danny Boyle,8.1,88,140,485,1
+189,Siege Line,Action,112,2023,Mark Wahlberg,Ang Lee,7.2,79,134,115,1
+190,Autumn's Grace,Romance,102,2021,Cate Blanchett,Lana Wachowski,7.5,85,59,58,0
+191,Stellar Rhythms,Sci-Fi,116,2021,Robert De Niro,J.J. Abrams,7.4,84,145,108,1
+192,Labyrinth's Heart,Mystery,98,2022,Jessica Chastain,Christopher Nolan,7.6,85,72,96,0
+193,Rebellion's Roar,Action,110,2021,Denzel Washington,Mel Gibson,6.9,75,129,104,1
+194,Sundown Kisses,Romance,103,2022,Michelle Pfeiffer,Wong Kar-wai,7.7,87,48,47,0
+195,Haunt's Echo,Horror,91,2021,Ben Affleck,Dario Argento,6.5,72,30,54,0
+196,Mountains Beyond,Adventure,120,2023,Edward Norton,Bong Joon-ho,7.8,87,138,130,1
+197,Quantum Echoes,Sci-Fi,118,2022,Bill Murray,David Lynch,7.2,82,141,126,1
+198,Dream's Resonance,Drama,104,2023,Tessa Thompson,Barry Jenkins,7,78,51,50,0
+199,Peril's Abyss,Thriller,98,2021,Willem Dafoe,Brian De Palma,6.7,75,119,100,0
+200,Starlit Expedition,Adventure,117,2022,Shah Rukh Khan,Patty Jenkins,8,90,135,475,0
