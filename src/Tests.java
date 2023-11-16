@@ -65,7 +65,7 @@ public class Tests
             double currentSimilarity = similarity(testFeature, trainingData[i]);
             if (currentSimilarity > bestSimilarity)
             {
-                currentSimilarity = bestSimilarity;
+                bestSimilarity = currentSimilarity;
                 bestMatch = i;
             }
         }
