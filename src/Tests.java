@@ -1,6 +1,6 @@
 //in progress creating template for the project (movie dataset reading, masking, KNN for K=1)
 import java.io.*;
-import java.util.SplittableRandom;
+import java.util.*;
 
 public class Tests
 {
@@ -54,7 +54,53 @@ public class Tests
         return dot(u, v);
     }
 
-    // We have implemented KNN classifier for the K=1 case only. You are welcome to modify it to support any K
+    // KNN classifier for any K value?
+    static int knnClassify(double[][] trainingData, int[] trainingLabels, double[] testFeature, int k)
+    {
+        List<Map.Entry<Integer, Double>> similarities = new ArrayList<>();
+
+        // store all indexes and similarities into a list
+        for (int i = 0; i < trainingData.length; i++)
+        {
+            double currentSimilarity = similarity(testFeature, trainingData[i]);
+            similarities.add(Map.entry(i, currentSimilarity));
+        }
+
+        // sort the list based on highest similarity to lowest
+        similarities.sort((p1, p2) ->
+        {
+            if (p1.getValue() < p2.getValue()) return 1;
+            else if (p1.getValue() > p2.getValue()) return -1;
+
+            return 0;
+        });
+
+        // collect common labels using K
+        HashMap<Integer, Integer> commonOccurrence = new HashMap<>();
+        for (int i = 0; i < k; i++)
+        {
+            int label = trainingLabels[similarities.get(i).getKey()];
+            if (commonOccurrence.containsKey(label))
+            {
+                commonOccurrence.put(label, commonOccurrence.get(label) + 1);
+            }
+            else commonOccurrence.put(label, 1);
+        }
+
+        // find the most common label
+        return Collections.max(commonOccurrence.keySet(), (c1, c2) ->
+        {
+            if (commonOccurrence.get(c1) < commonOccurrence.get(c2)) return -1;
+            else if (commonOccurrence.get(c1) > commonOccurrence.get(c2)) return 1;
+
+            return 0;
+        });
+    }
+
+    /**
+     * @deprecated only supports k = 1
+     */
+    @Deprecated
     static int knnClassify(double[][] trainingData, int[] trainingLabels, double[] testFeature)
     {
         int bestMatch = -1;
@@ -65,7 +111,7 @@ public class Tests
             double currentSimilarity = similarity(testFeature, trainingData[i]);
             if (currentSimilarity > bestSimilarity)
             {
-                currentSimilarity = bestSimilarity;
+                bestSimilarity = currentSimilarity;
                 bestMatch = i;
             }
         }
@@ -103,7 +149,6 @@ public class Tests
 
     public static void main(String[] args)
     {
-
         double[][] trainingData = new double[100][];
         int[] trainingLabels = new int[100];
         double[][] testingData = new double[100][];
@@ -124,7 +169,7 @@ public class Tests
         int correctPredictions = 0;
         for (int i = 0; i < 100; i++)
         {
-            if (knnClassify(trainingData, trainingLabels, testingData[i]) == testingLabels[i]) correctPredictions++;
+            if (knnClassify(trainingData, trainingLabels, testingData[i], 1) == testingLabels[i]) correctPredictions++;
         }
 
         double accuracy = (double) correctPredictions / testingData.length * 100;
