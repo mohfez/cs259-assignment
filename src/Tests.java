@@ -41,7 +41,6 @@ public class Tests
             case "Horror": feature[1] = 5; break;
             case "Mystery": feature[1] = 6; break;
             case "Thriller": feature[1] = 7; break;
-
         }
 
         // That is all. We don't use any other attributes for prediction.
@@ -80,11 +79,7 @@ public class Tests
         for (int i = 0; i < k; i++)
         {
             int label = trainingLabels[similarities.get(i).getKey()];
-            if (commonOccurrence.containsKey(label))
-            {
-                commonOccurrence.put(label, commonOccurrence.get(label) + 1);
-            }
-            else commonOccurrence.put(label, 1);
+            commonOccurrence.put(label, commonOccurrence.getOrDefault(label, 0) + 1);
         }
 
         // find the most common label
@@ -119,6 +114,37 @@ public class Tests
         return trainingLabels[bestMatch];
     }
 
+    static double naiveBayesAcceptedProbability = 0.6; // 60% accuracy at least
+    static int naiveBayesClassify(double[][] trainingData, int[] trainingLabels, double[] testFeature)
+    {
+        // total likes and dislikes
+        int totalLikeCount = 0;
+        int totalDislikeCount = 0;
+
+        // how many movies student X likes based on the features used
+        double likeOccurrences = 0.001; // smoothing
+        double dislikeOccurrences = 0.001; // smoothing
+
+        for (int i = 0; i < trainingLabels.length; i++)
+        {
+            // increment total likes and dislikes
+            if (trainingLabels[i] == 1) totalLikeCount++;
+            else if (trainingLabels[i] == 0) totalDislikeCount++;
+
+            if (Arrays.equals(trainingData[i], testFeature)) // if same features
+            {
+                // increment occurrences
+                if (trainingLabels[i] == 1) likeOccurrences++;
+                else if (trainingLabels[i] == 0) dislikeOccurrences++;
+            }
+        }
+
+        // start predicting probability of liking current movie
+        double likeProbability = likeOccurrences / totalLikeCount;
+        double dislikeProbability = dislikeOccurrences / totalDislikeCount;
+
+        return likeProbability / (likeProbability + dislikeProbability) >= naiveBayesAcceptedProbability ? 1 : 0;
+    }
 
     static void loadData(String filePath, double[][] dataFeatures, int[] dataLabels) throws IOException
     {
@@ -166,13 +192,17 @@ public class Tests
         }
 
         // Compute accuracy on the testing set
-        int correctPredictions = 0;
+        int knnCorrectPredictions = 0;
+        int bayesCorrectPredictions = 0;
         for (int i = 0; i < 100; i++)
         {
-            if (knnClassify(trainingData, trainingLabels, testingData[i], 1) == testingLabels[i]) correctPredictions++;
+            if (knnClassify(trainingData, trainingLabels, testingData[i], 1) == testingLabels[i]) knnCorrectPredictions++;
+            if (naiveBayesClassify(trainingData, trainingLabels, testingData[i]) == testingLabels[i]) bayesCorrectPredictions++;
         }
 
-        double accuracy = (double) correctPredictions / testingData.length * 100;
-        System.out.printf("A: %.2f%%\n", accuracy);
+        double knnAccuracy = (double) knnCorrectPredictions / testingData.length * 100;
+        double bayesAccuracy = (double) bayesCorrectPredictions / testingData.length * 100;
+        System.out.printf("KNN Accuracy: %.2f%%\n", knnAccuracy);
+        System.out.printf("Naive Bayes Accuracy: %.2f%%\n", bayesAccuracy);
     }
 }
