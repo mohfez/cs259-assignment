@@ -114,7 +114,6 @@ public class Tests
         return trainingLabels[bestMatch];
     }
 
-    static double naiveBayesAcceptedProbability = 0.6; // 60% accuracy at least
     static int naiveBayesClassify(double[][] trainingData, int[] trainingLabels, double[] testFeature)
     {
         // total likes and dislikes
@@ -143,7 +142,7 @@ public class Tests
         double likeProbability = likeOccurrences / totalLikeCount;
         double dislikeProbability = dislikeOccurrences / totalDislikeCount;
 
-        return likeProbability / (likeProbability + dislikeProbability) >= naiveBayesAcceptedProbability ? 1 : 0;
+        return likeProbability > dislikeProbability ? 1 : 0;
     }
 
     static void loadData(String filePath, double[][] dataFeatures, int[] dataLabels) throws IOException
