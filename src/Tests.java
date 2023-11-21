@@ -144,7 +144,7 @@ public class Tests
         return likeProbability > dislikeProbability ? 1 : 0;
     }
 
-    static int naiveBayesClassify(double[][] trainingData, int[] trainingLabels, double[] testFeature) // TODO: unfinished, check if it actually works
+    static int naiveBayesClassify(double[][] trainingData, int[] trainingLabels, double[] testFeature) // TODO: some testing with few test cases
     {
         // total likes and dislikes
         int totalLikeCount = 0;
@@ -158,20 +158,18 @@ public class Tests
         for (int i = 0; i < trainingLabels.length; i++)
         {
             // increment (dis)like counts
-            if (trainingLabels[i] == 1)
+            if (trainingLabels[i] == 1) totalLikeCount++;
+            else if (trainingLabels[i] == 0) totalDislikeCount++;
+
+            for (int k = 0; k < trainingData[i].length; k++)
             {
-                totalLikeCount++;
-                for (int k = 0; k < trainingData[i].length; k++)
+                if (trainingLabels[i] == 1)
                 {
                     likeCount.put(k, likeCount.getOrDefault(k, new HashMap<>())); // make a new hashmap if not already exists
                     Map<Double, Integer> featureMap = likeCount.get(k); // get the feature map (feature val, like occurrences)
                     featureMap.put(trainingData[i][k], featureMap.getOrDefault(trainingData[i][k], 0) + 1); // use feature value as key to add 1 like to
                 }
-            }
-            else if (trainingLabels[i] == 0)
-            {
-                totalDislikeCount++;
-                for (int k = 0; k < trainingData[i].length; k++)
+                else if (trainingLabels[i] == 0)
                 {
                     dislikeCount.put(k, dislikeCount.getOrDefault(k, new HashMap<>())); // make a new hashmap if not already exists
                     Map<Double, Integer> featureMap = dislikeCount.get(k); // get the feature map (feature val, dislike occurrences)
@@ -186,21 +184,23 @@ public class Tests
 
         double likeLikelihood = 1;
         double dislikeLikelihood = 1;
+        double evidence = 0;
 
-        for (int i = 0; i < testFeature.length; i++) // TODO: not sure if im calculating likelihood properly
+        for (int i = 0; i < testFeature.length; i++)
         {
             // amount of likes so far based on current feature value
             int countingLikes = likeCount.get(i).getOrDefault(testFeature[i], 0);
             // amount of dislikes so far based on current feature value
             int countingDislikes = dislikeCount.get(i).getOrDefault(testFeature[i], 0);
 
-            likeLikelihood *= (double) (countingLikes + 1) / (totalLikeCount + likeCount.get(i).size()); // 1 for smoothing
-            dislikeLikelihood *= (double) (countingDislikes + 1) / (totalDislikeCount + dislikeCount.get(i).size()); // 1 for smoothing
+            likeLikelihood *= (double) countingLikes / trainingData.length;
+            dislikeLikelihood *= (double) countingDislikes / trainingData.length;
+            evidence += ((double) countingLikes / trainingData.length) + ((double) countingDislikes / trainingData.length);
         }
 
         // posterior probability = (likelihood * prior probability) / probability of evidence
-        double likePosteriorProbability = (likeLikelihood * priorLikeProbability) / (likeLikelihood + dislikeLikelihood);
-        double dislikePosteriorProbability = (dislikeLikelihood * priorDislikeProbability) / (likeLikelihood + dislikeLikelihood);
+        double likePosteriorProbability = (likeLikelihood * priorLikeProbability) / evidence;
+        double dislikePosteriorProbability = (dislikeLikelihood * priorDislikeProbability) / evidence;
 
         return likePosteriorProbability > dislikePosteriorProbability ? 1 : 0;
     }
