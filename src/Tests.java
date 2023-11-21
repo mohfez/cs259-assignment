@@ -25,10 +25,10 @@ public class Tests
     }
 
     static int NumberOfFeatures = 2;
-    static double[] toFeatureVector(double id, String genre, double runtime, double year, String leadActor, String director, double imdb, double rt, double budget, double boxOffice)
+    static double[] toFeatureVector(double id, String genre, double runtime, double year, double imdb, double rt, double budget, double boxOffice)
     {
         double[] feature = new double[NumberOfFeatures];
-        feature[0] = imdb;  // instead of id  TODO: edit feature vectors later
+        feature[0] = imdb; // TODO: edit feature vectors later
 
         switch (genre)
         {
@@ -113,23 +113,21 @@ public class Tests
         return trainingLabels[bestMatch];
     }
 
+    /*
+        If the current movie that's being checked has the same feature values as the ones in the training dataset then add 1 to the like counter if it's liked
+        otherwise add 1 to the dislike counter if it isn't. Then find the probabilities at the end and compare them.
+
+        One of the weaknesses is that all feature values must be the same otherwise it fails.
+     */
     static int simpleProbabilityModel(double[][] trainingData, int[] trainingLabels, double[] testFeature)
     {
-        // total likes and dislikes
-        int totalLikeCount = 0;
-        int totalDislikeCount = 0;
-
         // how many movies student X likes based on the features used
         double likeOccurrences = 0;
         double dislikeOccurrences = 0;
 
         for (int i = 0; i < trainingLabels.length; i++)
         {
-            // increment total likes and dislikes
-            if (trainingLabels[i] == 1) totalLikeCount++;
-            else if (trainingLabels[i] == 0) totalDislikeCount++;
-
-            if (Arrays.equals(trainingData[i], testFeature)) // if same features (weakness: must contain all features)
+            if (Arrays.equals(trainingData[i], testFeature)) // if same features
             {
                 // increment occurrences
                 if (trainingLabels[i] == 1) likeOccurrences++;
@@ -138,13 +136,18 @@ public class Tests
         }
 
         // start predicting probability of liking current movie
-        double likeProbability = likeOccurrences / (totalLikeCount + totalDislikeCount);
-        double dislikeProbability = dislikeOccurrences / (totalLikeCount + totalDislikeCount);
+        double likeProbability = likeOccurrences / trainingData.length;
+        double dislikeProbability = dislikeOccurrences / trainingData.length;
 
         return likeProbability > dislikeProbability ? 1 : 0;
     }
 
-    static int naiveBayesClassify(double[][] trainingData, int[] trainingLabels, double[] testFeature) // TODO: some testing with few test cases
+    /*
+        Uses nested hashmap to store the feature values alongside their like/dislike counts.
+        feature i is the index of the features array that will be used to compare testing feature values with training feature values, e.g. feature[0] is year and feature[1] is genre (0 and 1)
+        At the end, it'll find the occurrences for each feature type & value and use them for likelihood calculations
+     */
+    static int naiveBayesClassify(double[][] trainingData, int[] trainingLabels, double[] testFeature)
     {
         // total likes and dislikes
         int totalLikeCount = 0;
@@ -184,7 +187,6 @@ public class Tests
 
         double likeLikelihood = 1;
         double dislikeLikelihood = 1;
-        double evidence = 0;
 
         for (int i = 0; i < testFeature.length; i++)
         {
@@ -195,10 +197,12 @@ public class Tests
 
             likeLikelihood *= (double) countingLikes / trainingData.length;
             dislikeLikelihood *= (double) countingDislikes / trainingData.length;
-            evidence += ((double) countingLikes / trainingData.length) + ((double) countingDislikes / trainingData.length);
         }
 
         // posterior probability = (likelihood * prior probability) / probability of evidence
+        // based on p(a|b) = (p(b|a) * p(a)) / (p(b|a) * p(a) + p(b|~a) * p(~a))
+        // or p(a|b,c..) = (p(b|a) * p(c|a) * p(a)) / (p(b|a) * p(c|a) * p(a) + p(b|~a) * p(c|~a) * p(~a))
+        double evidence = (likeLikelihood * priorLikeProbability) + (dislikeLikelihood * priorDislikeProbability);
         double likePosteriorProbability = (likeLikelihood * priorLikeProbability) / evidence;
         double dislikePosteriorProbability = (dislikeLikelihood * priorDislikeProbability) / evidence;
 
@@ -220,14 +224,12 @@ public class Tests
                 String genre = values[2];
                 double runtime = Double.parseDouble(values[3]);
                 double year = Double.parseDouble(values[4]);
-                String leadActor = values[5]; // added lead actor
-                String director = values[5]; // added director
                 double imdb = Double.parseDouble(values[7]);
                 double rt = Double.parseDouble(values[8]);
                 double budget = Double.parseDouble(values[9]);
                 double boxOffice = Double.parseDouble(values[10]);
 
-                dataFeatures[idx] = toFeatureVector(id, genre, runtime, year, leadActor, director, imdb, rt, budget, boxOffice);
+                dataFeatures[idx] = toFeatureVector(id, genre, runtime, year, imdb, rt, budget, boxOffice);
                 dataLabels[idx] = Integer.parseInt(values[11]); // Assuming the label is the last column and is numeric
                 idx++;
             }
@@ -256,9 +258,8 @@ public class Tests
         int knnCorrectPredictions = 0;
         int simpleProbCorrectPredictions = 0;
         int bayesCorrectPredictions = 0;
-        int correctPredictionsCombined = 0;
 
-        for (int i = 0; i < 100; i++)
+        for (int i = 0; i < testingData.length; i++)
         {
             boolean knnClassify = knnClassify(trainingData, trainingLabels, testingData[i], 1) == testingLabels[i];
             boolean simpleProbabilities = simpleProbabilityModel(trainingData, trainingLabels, testingData[i]) == testingLabels[i];
@@ -267,17 +268,13 @@ public class Tests
             if (knnClassify) knnCorrectPredictions++;
             if (simpleProbabilities) simpleProbCorrectPredictions++;
             if (naiveBayesClassify) bayesCorrectPredictions++;
-
-            if (knnClassify || simpleProbabilities || naiveBayesClassify) correctPredictionsCombined++;
         }
 
         double knnAccuracy = (double) knnCorrectPredictions / testingData.length * 100;
         double simpleProbAccuracy = (double) simpleProbCorrectPredictions / testingData.length * 100;
         double bayesAccuracy = (double) bayesCorrectPredictions / testingData.length * 100;
-        double combinedAccuracy = (double) correctPredictionsCombined / testingData.length * 100;
         System.out.printf("KNN Accuracy: %.2f%%\n", knnAccuracy);
         System.out.printf("Simple Model Accuracy: %.2f%%\n", simpleProbAccuracy);
         System.out.printf("Naive Bayes Accuracy: %.2f%%\n", bayesAccuracy);
-        System.out.printf("Combined Accuracy: %.2f%%\n", combinedAccuracy);
     }
 }
