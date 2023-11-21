@@ -138,8 +138,8 @@ public class Tests
         }
 
         // start predicting probability of liking current movie
-        double likeProbability = likeOccurrences / totalLikeCount;
-        double dislikeProbability = dislikeOccurrences / totalDislikeCount;
+        double likeProbability = likeOccurrences / (totalLikeCount + totalDislikeCount);
+        double dislikeProbability = dislikeOccurrences / (totalLikeCount + totalDislikeCount);
 
         return likeProbability > dislikeProbability ? 1 : 0;
     }
