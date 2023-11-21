@@ -122,8 +122,8 @@ public class Tests
     static int simpleProbabilityModel(double[][] trainingData, int[] trainingLabels, double[] testFeature)
     {
         // how many movies student X likes based on the features used
-        double likeOccurrences = 0;
-        double dislikeOccurrences = 0;
+        double likeOccurrences = 0.001; // smoothing
+        double dislikeOccurrences = 0.001; // smoothing
 
         for (int i = 0; i < trainingLabels.length; i++)
         {
@@ -136,8 +136,8 @@ public class Tests
         }
 
         // start predicting probability of liking current movie
-        double likeProbability = likeOccurrences / trainingData.length;
-        double dislikeProbability = dislikeOccurrences / trainingData.length;
+        double likeProbability = likeOccurrences / (likeOccurrences + dislikeOccurrences);
+        double dislikeProbability = dislikeOccurrences / (likeOccurrences + dislikeOccurrences);
 
         return likeProbability > dislikeProbability ? 1 : 0;
     }
