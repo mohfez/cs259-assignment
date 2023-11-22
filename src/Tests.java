@@ -114,11 +114,10 @@ public class Tests
         return trainingLabels[bestMatch];
     }
 
-    /*
-        Uses nested hashmap to store the feature values alongside their like/dislike counts.
-        feature i is the index of the features array that will be used to compare testing feature values with training feature values, e.g. feature[0] is year and feature[1] is genre (0 and 1)
-        At the end, it'll find the occurrences for each feature type & value and use them for likelihood calculations
+    /**
+     * @deprecated does not support continuous features, use gaussianNaiveBayesClassify instead. Just set all the continuousFeatures array elements to false if you want the classical naive bayes.
      */
+    @Deprecated
     static int naiveBayesClassify(double[][] trainingData, int[] trainingLabels, double[] testFeature)
     {
         // total likes and dislikes
@@ -182,8 +181,14 @@ public class Tests
     }
 
     /*
+        Uses nested hashmap to store the feature values alongside their like/dislike counts.
+        feature i is the index of the features array that will be used to compare testing feature values with training feature values, e.g. feature[0] is year and feature[1] is genre (0 and 1)
+        At the end, it'll find the occurrences for each feature type & value and use them for likelihood calculations
+
         Since the dataset has many continuous variables, gaussian naive bayes might be more appropriate instead of the classical
         runtime, year, imdb, rt, budget, box office all look like good features that are continuous
+
+        Note: set all continuousFeatures array to false if you want to use the classical naive bayes model
      */
     static int gaussianNaiveBayesClassify(double[][] trainingData, int[] trainingLabels, double[] testFeature, boolean[] continuousFeatures)
     {
@@ -380,7 +385,7 @@ public class Tests
         {
             boolean knnClassify = knnClassify(trainingData, trainingLabels, testingData[i], 1) == testingLabels[i];
             boolean simpleProbabilities = simpleProbabilityModel(trainingData, trainingLabels, testingData[i]) == testingLabels[i];
-            boolean naiveBayesClassify = naiveBayesClassify(trainingData, trainingLabels, testingData[i]) == testingLabels[i];
+            boolean naiveBayesClassify = gaussianNaiveBayesClassify(trainingData, trainingLabels, testingData[i], new boolean[] { false, false }) == testingLabels[i]; // we set all of continuousFeatures array to false so we can use the classical naive bayes calculations
             boolean gaussianNaiveBayesClassify = gaussianNaiveBayesClassify(trainingData, trainingLabels, testingData[i], new boolean[] { true, false }) == testingLabels[i]; // e.g. imdb is continuous, genre is not, hence it'll be { true, false }
 
             if (knnClassify) knnCorrectPredictions++;
