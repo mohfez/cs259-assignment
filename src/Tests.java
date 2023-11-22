@@ -55,6 +55,7 @@ public class Tests
     // KNN classifier for any K value
     static int knnClassify(double[][] trainingData, int[] trainingLabels, double[] testFeature, int k)
     {
+        // list of all similarities with their respective label index
         List<Map.Entry<Integer, Double>> similarities = new ArrayList<>();
 
         // store all indexes and similarities into a list
@@ -111,35 +112,6 @@ public class Tests
         }
 
         return trainingLabels[bestMatch];
-    }
-
-    /*
-        If the current movie that's being checked has the same feature values as the ones in the training dataset then add 1 to the like counter if it's liked
-        otherwise add 1 to the dislike counter if it isn't. Then find the probabilities at the end and compare them.
-
-        One of the weaknesses is that all feature values must be the same otherwise it fails.
-     */
-    static int simpleProbabilityModel(double[][] trainingData, int[] trainingLabels, double[] testFeature)
-    {
-        // how many movies student X likes based on the features used
-        double likeOccurrences = 0.001; // smoothing
-        double dislikeOccurrences = 0.001; // smoothing
-
-        for (int i = 0; i < trainingLabels.length; i++)
-        {
-            if (Arrays.equals(trainingData[i], testFeature)) // if same features
-            {
-                // increment occurrences
-                if (trainingLabels[i] == 1) likeOccurrences++;
-                else if (trainingLabels[i] == 0) dislikeOccurrences++;
-            }
-        }
-
-        // start predicting probability of liking current movie
-        double likeProbability = likeOccurrences / (likeOccurrences + dislikeOccurrences);
-        double dislikeProbability = dislikeOccurrences / (likeOccurrences + dislikeOccurrences);
-
-        return likeProbability > dislikeProbability ? 1 : 0;
     }
 
     /*
@@ -209,6 +181,150 @@ public class Tests
         return likePosteriorProbability > dislikePosteriorProbability ? 1 : 0;
     }
 
+    /*
+        Since the dataset has many continuous variables, gaussian naive bayes might be more appropriate instead of the classical
+        runtime, year, imdb, rt, budget, box office all look like good features that are continuous
+     */
+    static int gaussianNaiveBayesClassify(double[][] trainingData, int[] trainingLabels, double[] testFeature, boolean[] continuousFeatures)
+    {
+        // total likes and dislikes
+        int totalLikeCount = 0;
+        int totalDislikeCount = 0;
+
+        // maps of feature i : (feature val, (dis)like count)
+        Map<Integer, Map<Double, Integer>> likeCount = new HashMap<>();
+        Map<Integer, Map<Double, Integer>> dislikeCount = new HashMap<>();
+
+        // feature i, double[4] [mean for like it, mean for dislike it, std. dev for like it, std. dev for dislike it]
+        Map<Integer, double[]> meanAndStdDevTable = new HashMap<>();
+
+        // train the classifier
+        for (int i = 0; i < trainingLabels.length; i++)
+        {
+            // increment (dis)like counts
+            if (trainingLabels[i] == 1) totalLikeCount++;
+            else if (trainingLabels[i] == 0) totalDislikeCount++;
+
+            for (int k = 0; k < trainingData[i].length; k++)
+            {
+                if (trainingLabels[i] == 1)
+                {
+                    if (!continuousFeatures[k])
+                    {
+                        likeCount.put(k, likeCount.getOrDefault(k, new HashMap<>())); // make a new hashmap if not already exists
+                        Map<Double, Integer> featureMap = likeCount.get(k); // get the feature map (feature val, like occurrences)
+                        featureMap.put(trainingData[i][k], featureMap.getOrDefault(trainingData[i][k], 0) + 1); // use feature value as key to add 1 like to
+                    }
+                }
+                else if (trainingLabels[i] == 0)
+                {
+                    if (!continuousFeatures[k])
+                    {
+                        dislikeCount.put(k, dislikeCount.getOrDefault(k, new HashMap<>())); // make a new hashmap if not already exists
+                        Map<Double, Integer> featureMap = dislikeCount.get(k); // get the feature map (feature val, dislike occurrences)
+                        featureMap.put(trainingData[i][k], featureMap.getOrDefault(trainingData[i][k], 0) + 1); // use feature value as key to add 1 dislike to
+                    }
+                }
+
+                // process for calculating means
+                if (continuousFeatures[k])
+                {
+                    meanAndStdDevTable.put(k, meanAndStdDevTable.getOrDefault(k, new double[4])); // make a new double[] if not already exists
+                    if (trainingLabels[i] == 1) meanAndStdDevTable.get(k)[0] += trainingData[i][k]; // add feature value to mean like it
+                    else if (trainingLabels[i] == 0) meanAndStdDevTable.get(k)[1] += trainingData[i][k]; // add feature value to mean dislike it
+                }
+            }
+        }
+
+        // calculate probabilities
+        double priorLikeProbability = (double) totalLikeCount / trainingData.length;
+        double priorDislikeProbability = (double) totalDislikeCount / trainingData.length;
+
+        double likeLikelihood = 1;
+        double dislikeLikelihood = 1;
+
+        for (int i = 0; i < testFeature.length; i++)
+        {
+            if (!continuousFeatures[i])
+            {
+                // amount of likes so far based on current feature value
+                int countingLikes = likeCount.get(i).getOrDefault(testFeature[i], 0);
+                // amount of dislikes so far based on current feature value
+                int countingDislikes = dislikeCount.get(i).getOrDefault(testFeature[i], 0);
+
+                likeLikelihood *= (double) countingLikes / trainingData.length;
+                dislikeLikelihood *= (double) countingDislikes / trainingData.length;
+            }
+            else
+            {
+                // calculate means
+                double[] table = meanAndStdDevTable.get(i);
+                table[0] /= totalLikeCount; // calculate mean for like it
+                table[1] /= totalDislikeCount; // calculate mean for dislike it
+
+                double sigmaLikeIt = 0;
+                double sigmaDislikeIt = 0;
+
+                // calculate standard deviations
+                for (int k = 0; k < trainingData.length; k++)
+                {
+                    if (trainingLabels[k] == 1) // likes it
+                    {
+                        sigmaLikeIt += Math.pow(trainingData[k][i] - table[0], 2);
+                    }
+                    else if (trainingLabels[k] == 0) // dislikes it
+                    {
+                        sigmaDislikeIt += Math.pow(trainingData[k][i] - table[1], 2);
+                    }
+                }
+
+                table[2] = Math.sqrt(sigmaLikeIt / (totalLikeCount - 1)); // standard deviation for like it
+                table[3] = Math.sqrt(sigmaDislikeIt / (totalDislikeCount - 1)); // standard deviation for dislike it
+
+                likeLikelihood *= Math.exp(-Math.pow((testFeature[i] - table[0]), 2) / (2 * Math.pow(table[2], 2))) / (table[2] * Math.sqrt(2 * Math.PI)); // using gaussian formula
+                dislikeLikelihood *= Math.exp(-Math.pow((testFeature[i] - table[1]), 2) / (2 * Math.pow(table[3], 2))) / (table[3] * Math.sqrt(2 * Math.PI)); // using gaussian formula
+            }
+        }
+
+        // posterior probability = (likelihood * prior probability) / probability of evidence
+        // based on p(a|b) = (p(b|a) * p(a)) / (p(b|a) * p(a) + p(b|~a) * p(~a))
+        // or p(a|b,c..) = (p(b|a) * p(c|a) * p(a)) / (p(b|a) * p(c|a) * p(a) + p(b|~a) * p(c|~a) * p(~a))
+        double evidence = (likeLikelihood * priorLikeProbability) + (dislikeLikelihood * priorDislikeProbability);
+        double likePosteriorProbability = (likeLikelihood * priorLikeProbability) / evidence;
+        double dislikePosteriorProbability = (dislikeLikelihood * priorDislikeProbability) / evidence;
+
+        return likePosteriorProbability > dislikePosteriorProbability ? 1 : 0;
+    }
+
+    /*
+        If the current movie that's being checked has the same feature values as the ones in the training dataset then add 1 to the like counter if it's liked
+        otherwise add 1 to the dislike counter if it isn't. Then find the probabilities at the end and compare them.
+
+        One of the weaknesses is that all feature values must be the same otherwise it fails.
+     */
+    static int simpleProbabilityModel(double[][] trainingData, int[] trainingLabels, double[] testFeature)
+    {
+        // how many movies student X likes based on the features used
+        double likeOccurrences = 0.001; // smoothing
+        double dislikeOccurrences = 0.001; // smoothing
+
+        for (int i = 0; i < trainingLabels.length; i++)
+        {
+            if (Arrays.equals(trainingData[i], testFeature)) // if same features
+            {
+                // increment occurrences
+                if (trainingLabels[i] == 1) likeOccurrences++;
+                else if (trainingLabels[i] == 0) dislikeOccurrences++;
+            }
+        }
+
+        // start predicting probability of liking current movie
+        double likeProbability = likeOccurrences / (likeOccurrences + dislikeOccurrences);
+        double dislikeProbability = dislikeOccurrences / (likeOccurrences + dislikeOccurrences);
+
+        return likeProbability > dislikeProbability ? 1 : 0;
+    }
+
     static void loadData(String filePath, double[][] dataFeatures, int[] dataLabels) throws IOException
     {
         try (BufferedReader br = new BufferedReader(new FileReader(filePath)))
@@ -258,23 +374,28 @@ public class Tests
         int knnCorrectPredictions = 0;
         int simpleProbCorrectPredictions = 0;
         int bayesCorrectPredictions = 0;
+        int gaussianBayesCorrectPredictions = 0;
 
         for (int i = 0; i < testingData.length; i++)
         {
             boolean knnClassify = knnClassify(trainingData, trainingLabels, testingData[i], 1) == testingLabels[i];
             boolean simpleProbabilities = simpleProbabilityModel(trainingData, trainingLabels, testingData[i]) == testingLabels[i];
             boolean naiveBayesClassify = naiveBayesClassify(trainingData, trainingLabels, testingData[i]) == testingLabels[i];
+            boolean gaussianNaiveBayesClassify = gaussianNaiveBayesClassify(trainingData, trainingLabels, testingData[i], new boolean[] { true, false }) == testingLabels[i]; // e.g. imdb is continuous, genre is not, hence it'll be { true, false }
 
             if (knnClassify) knnCorrectPredictions++;
             if (simpleProbabilities) simpleProbCorrectPredictions++;
             if (naiveBayesClassify) bayesCorrectPredictions++;
+            if (gaussianNaiveBayesClassify) gaussianBayesCorrectPredictions++;
         }
 
         double knnAccuracy = (double) knnCorrectPredictions / testingData.length * 100;
         double simpleProbAccuracy = (double) simpleProbCorrectPredictions / testingData.length * 100;
         double bayesAccuracy = (double) bayesCorrectPredictions / testingData.length * 100;
+        double gaussianBayesAccuracy = (double) gaussianBayesCorrectPredictions / testingData.length * 100;
         System.out.printf("KNN Accuracy: %.2f%%\n", knnAccuracy);
         System.out.printf("Simple Model Accuracy: %.2f%%\n", simpleProbAccuracy);
         System.out.printf("Naive Bayes Accuracy: %.2f%%\n", bayesAccuracy);
+        System.out.printf("Gaussian Naive Bayes Accuracy: %.2f%%\n", gaussianBayesAccuracy);
     }
 }
