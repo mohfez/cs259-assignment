@@ -4,6 +4,12 @@ import java.util.*;
 
 public class Tests
 {
+    // only enable one of them at a time
+    static boolean testingKnn = true;
+    static boolean testingSimpleModel = false;
+    static boolean testingNaiveBayes = false;
+    static boolean testingGaussianNaiveBayes = false;
+
     static void Assert (boolean res) // We use this to test our results - don't delete or modify!
     {
         if (!res)
@@ -24,23 +30,82 @@ public class Tests
         return ans;
     }
 
-    static int NumberOfFeatures = 2;
     static double[] toFeatureVector(double id, String genre, double runtime, double year, double imdb, double rt, double budget, double boxOffice)
     {
-        double[] feature = new double[NumberOfFeatures];
-        feature[0] = imdb; // TODO: edit feature vectors later
+        double[] feature = null;
 
-        switch (genre)
+        if (testingKnn)
         {
-            // We also use represent each movie genre as an integer number:
-            case "Action":  feature[1] = 0; break;
-            case "Drama":   feature[1] = 1; break;
-            case "Romance": feature[1] = 2; break;
-            case "Sci-Fi": feature[1] = 3; break;
-            case "Adventure": feature[1] = 4; break;
-            case "Horror": feature[1] = 5; break;
-            case "Mystery": feature[1] = 6; break;
-            case "Thriller": feature[1] = 7; break;
+            feature = new double[9]; // n features
+
+            switch (genre)
+            {
+                // Use one-hot encoding for genre
+                case "Action":  feature[0] = 1; break;
+                case "Drama":   feature[1] = 1; break;
+                case "Romance": feature[2] = 1; break;
+                case "Sci-Fi": feature[3] = 1; break;
+                case "Adventure": feature[4] = 1; break;
+                case "Horror": feature[5] = 1; break;
+                case "Mystery": feature[6] = 1; break;
+                case "Thriller": feature[7] = 1; break;
+            }
+
+            feature[8] = Math.log10(runtime); // log transformation, using base 10 as constant
+        }
+        else if (testingSimpleModel)
+        {
+            feature = new double[2]; // n features
+
+            feature[0] = imdb;
+            switch (genre)
+            {
+                case "Action":  feature[1] = 0; break;
+                case "Drama":   feature[1] = 1; break;
+                case "Romance": feature[1] = 2; break;
+                case "Sci-Fi": feature[1] = 3; break;
+                case "Adventure": feature[1] = 4; break;
+                case "Horror": feature[1] = 5; break;
+                case "Mystery": feature[1] = 6; break;
+                case "Thriller": feature[1] = 7; break;
+            }
+        }
+        else if (testingNaiveBayes)
+        {
+            feature = new double[2]; // n features
+
+            feature[0] = imdb;
+            switch (genre)
+            {
+                case "Action":  feature[1] = 0; break;
+                case "Drama":   feature[1] = 1; break;
+                case "Romance": feature[1] = 2; break;
+                case "Sci-Fi": feature[1] = 3; break;
+                case "Adventure": feature[1] = 4; break;
+                case "Horror": feature[1] = 5; break;
+                case "Mystery": feature[1] = 6; break;
+                case "Thriller": feature[1] = 7; break;
+            }
+        }
+        else if (testingGaussianNaiveBayes)
+        {
+            feature = new double[5]; // n features
+
+            feature[0] = year;
+            switch (genre)
+            {
+                case "Action":  feature[1] = 0; break;
+                case "Drama":   feature[1] = 1; break;
+                case "Romance": feature[1] = 2; break;
+                case "Sci-Fi": feature[1] = 3; break;
+                case "Adventure": feature[1] = 4; break;
+                case "Horror": feature[1] = 5; break;
+                case "Mystery": feature[1] = 6; break;
+                case "Thriller": feature[1] = 7; break;
+            }
+            feature[2] = budget;
+            feature[3] = runtime;
+            feature[4] = boxOffice;
         }
 
         return feature;
@@ -383,10 +448,10 @@ public class Tests
 
         for (int i = 0; i < testingData.length; i++)
         {
-            boolean knnClassify = knnClassify(trainingData, trainingLabels, testingData[i], 1) == testingLabels[i];
-            boolean simpleProbabilities = simpleProbabilityModel(trainingData, trainingLabels, testingData[i]) == testingLabels[i];
-            boolean naiveBayesClassify = gaussianNaiveBayesClassify(trainingData, trainingLabels, testingData[i], new boolean[] { false, false }) == testingLabels[i]; // we set all of continuousFeatures array to false so we can use the classical naive bayes calculations
-            boolean gaussianNaiveBayesClassify = gaussianNaiveBayesClassify(trainingData, trainingLabels, testingData[i], new boolean[] { true, false }) == testingLabels[i]; // e.g. imdb is continuous, genre is not, hence it'll be { true, false }
+            boolean knnClassify = testingKnn && knnClassify(trainingData, trainingLabels, testingData[i], 1) == testingLabels[i];
+            boolean simpleProbabilities = testingSimpleModel && simpleProbabilityModel(trainingData, trainingLabels, testingData[i]) == testingLabels[i];
+            boolean naiveBayesClassify = testingNaiveBayes && gaussianNaiveBayesClassify(trainingData, trainingLabels, testingData[i], new boolean[] { false, false }) == testingLabels[i]; // we set all of continuousFeatures array to false so we can use the classical naive bayes calculations
+            boolean gaussianNaiveBayesClassify = testingGaussianNaiveBayes && gaussianNaiveBayesClassify(trainingData, trainingLabels, testingData[i], new boolean[] { true, false, true, true, true }) == testingLabels[i]; // e.g. imdb is continuous, genre is not, hence it'll be { true, false }
 
             if (knnClassify) knnCorrectPredictions++;
             if (simpleProbabilities) simpleProbCorrectPredictions++;
@@ -398,9 +463,9 @@ public class Tests
         double simpleProbAccuracy = (double) simpleProbCorrectPredictions / testingData.length * 100;
         double bayesAccuracy = (double) bayesCorrectPredictions / testingData.length * 100;
         double gaussianBayesAccuracy = (double) gaussianBayesCorrectPredictions / testingData.length * 100;
-        System.out.printf("KNN Accuracy: %.2f%%\n", knnAccuracy);
-        System.out.printf("Simple Model Accuracy: %.2f%%\n", simpleProbAccuracy);
-        System.out.printf("Naive Bayes Accuracy: %.2f%%\n", bayesAccuracy);
-        System.out.printf("Gaussian Naive Bayes Accuracy: %.2f%%\n", gaussianBayesAccuracy);
+        if (testingKnn) System.out.printf("KNN Accuracy: %.2f%%\n", knnAccuracy);
+        if (testingSimpleModel) System.out.printf("Simple Model Accuracy: %.2f%%\n", simpleProbAccuracy);
+        if (testingNaiveBayes) System.out.printf("Naive Bayes Accuracy: %.2f%%\n", bayesAccuracy);
+        if (testingGaussianNaiveBayes) System.out.printf("Gaussian Naive Bayes Accuracy: %.2f%%\n", gaussianBayesAccuracy);
     }
 }
