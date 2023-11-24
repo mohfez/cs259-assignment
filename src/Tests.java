@@ -5,10 +5,10 @@ import java.util.*;
 public class Tests
 {
     // only enable one of them at a time
-    static boolean testingKnn = true;
+    static boolean testingKnn = false;
     static boolean testingSimpleModel = false;
     static boolean testingNaiveBayes = false;
-    static boolean testingGaussianNaiveBayes = false;
+    static boolean testingGaussianNaiveBayes = true;
 
     static void Assert (boolean res) // We use this to test our results - don't delete or modify!
     {
@@ -179,81 +179,71 @@ public class Tests
         return trainingLabels[bestMatch];
     }
 
-    /**
-     * @deprecated does not support continuous features, use gaussianNaiveBayesClassify instead. Just set all the continuousFeatures array elements to false if you want the classical naive bayes.
-     */
-    @Deprecated
-    static int naiveBayesClassify(double[][] trainingData, int[] trainingLabels, double[] testFeature)
-    {
-        // total likes and dislikes
-        int totalLikeCount = 0;
-        int totalDislikeCount = 0;
-
-        // maps of feature i : (feature val, (dis)like count)
-        Map<Integer, Map<Double, Integer>> likeCount = new HashMap<>();
-        Map<Integer, Map<Double, Integer>> dislikeCount = new HashMap<>();
-
-        // train the classifier
-        for (int i = 0; i < trainingLabels.length; i++)
-        {
-            // increment (dis)like counts
-            if (trainingLabels[i] == 1) totalLikeCount++;
-            else if (trainingLabels[i] == 0) totalDislikeCount++;
-
-            for (int k = 0; k < trainingData[i].length; k++)
-            {
-                if (trainingLabels[i] == 1)
-                {
-                    likeCount.put(k, likeCount.getOrDefault(k, new HashMap<>())); // make a new hashmap if not already exists
-                    Map<Double, Integer> featureMap = likeCount.get(k); // get the feature map (feature val, like occurrences)
-                    featureMap.put(trainingData[i][k], featureMap.getOrDefault(trainingData[i][k], 0) + 1); // use feature value as key to add 1 like to
-                }
-                else if (trainingLabels[i] == 0)
-                {
-                    dislikeCount.put(k, dislikeCount.getOrDefault(k, new HashMap<>())); // make a new hashmap if not already exists
-                    Map<Double, Integer> featureMap = dislikeCount.get(k); // get the feature map (feature val, dislike occurrences)
-                    featureMap.put(trainingData[i][k], featureMap.getOrDefault(trainingData[i][k], 0) + 1); // use feature value as key to add 1 dislike to
-                }
-            }
-        }
-
-        // calculate probabilities
-        double priorLikeProbability = (double) totalLikeCount / trainingData.length;
-        double priorDislikeProbability = (double) totalDislikeCount / trainingData.length;
-
-        double likeLikelihood = 1;
-        double dislikeLikelihood = 1;
-
-        for (int i = 0; i < testFeature.length; i++)
-        {
-            // amount of likes so far based on current feature value
-            int countingLikes = likeCount.get(i).getOrDefault(testFeature[i], 0);
-            // amount of dislikes so far based on current feature value
-            int countingDislikes = dislikeCount.get(i).getOrDefault(testFeature[i], 0);
-
-            likeLikelihood *= (double) countingLikes / trainingData.length;
-            dislikeLikelihood *= (double) countingDislikes / trainingData.length;
-        }
-
-        // posterior probability = (likelihood * prior probability) / probability of evidence
-        // based on p(a|b) = (p(b|a) * p(a)) / (p(b|a) * p(a) + p(b|~a) * p(~a))
-        // or p(a|b,c..) = (p(b|a) * p(c|a) * p(a)) / (p(b|a) * p(c|a) * p(a) + p(b|~a) * p(c|~a) * p(~a))
-        double evidence = (likeLikelihood * priorLikeProbability) + (dislikeLikelihood * priorDislikeProbability);
-        double likePosteriorProbability = (likeLikelihood * priorLikeProbability) / evidence;
-        double dislikePosteriorProbability = (dislikeLikelihood * priorDislikeProbability) / evidence;
-
-        return likePosteriorProbability > dislikePosteriorProbability ? 1 : 0;
-    }
-
     /*
-        Uses nested hashmap to store the feature values alongside their like/dislike counts.
-        feature i is the index of the features array that will be used to compare testing feature values with training feature values, e.g. feature[0] is year and feature[1] is genre (0 and 1)
-        At the end, it'll find the occurrences for each feature type & value and use them for likelihood calculations
-
-        Since the dataset has many continuous variables, gaussian naive bayes might be more appropriate instead of the classical
-        runtime, year, imdb, rt, budget, box office all look like good features that are continuous
+        Since the dataset has many continuous variables, gaussian naive bayes might be more appropriate instead of the classical.
+        runtime, imdb, rt, budget, box office all look like good features that are continuous.
+        genre and year look like they're categorical.
 
         Note: set all continuousFeatures array to false if you want to use the classical naive bayes model
+
+        The first part of the code makes tables using hashsets, for example let's use genre and year as our features:
+
+        ["likeCount" hashmap]
+        +-------------------+---------------+---------+
+        | Feature 0(Genre)  | Feature Value | Like It |
+        +-------------------+---------------+---------+
+        |                 - | Action        |      12 |
+        |                 - | Drama         |       5 |
+        |                 - | Romance       |       9 |
+        |                 - | Sci-Fi        |      12 |
+        |                 - | Adventure     |      15 |
+        |                 - | Horror        |       4 |
+        |                 - | Mystery       |       0 |
+        |                 - | Thriller      |       4 |
+        +-------------------+---------------+---------+
+
+        +------------------+---------------+---------+
+        | Feature 1(Year)  | Feature Value | Like It |
+        +------------------+---------------+---------+
+        |                - | 2021          |      18 |
+        |                - | 2022          |      18 |
+        |                - | 2023          |      25 |
+        +------------------+---------------+---------+
+
+        ["dislikeCount" hashmap]
+        +-------------------+---------------+------------+
+        | Feature 0(Genre)  | Feature Value | Dislike It |
+        +-------------------+---------------+------------+
+        |                 - | Action        |          3 |
+        |                 - | Drama         |         10 |
+        |                 - | Romance       |          6 |
+        |                 - | Sci-Fi        |          3 |
+        |                 - | Adventure     |          5 |
+        |                 - | Horror        |          6 |
+        |                 - | Mystery       |          5 |
+        |                 - | Thriller      |          1 |
+        +-------------------+---------------+------------+
+
+        +------------------+---------------+------------+
+        | Feature 1(Year)  | Feature Value | Dislike It |
+        +------------------+---------------+------------+
+        |                - | 2021          |         19 |
+        |                - | 2022          |         15 |
+        |                - | 2023          |          5 |
+        +------------------+---------------+------------+
+
+        we then use these values to calculate the probabilities.
+
+        for continuous features we use a hashmap to make a table of all the means and standard deviations, for example; using budget, runtime, boxOffice
+        +----------------+--------------------+-------------------+--------------------+----------------------+
+        |   Feature i    |     Mean Like      |   Mean Dislike    | Std. Dev For Like  | Std. Dev For Dislike |
+        +----------------+--------------------+-------------------+--------------------+----------------------+
+        | 2 (Budget)     |                111 | 77.76923076923077 | 43.282791037547476 |    43.80546801873119 |
+        | 3 (Runtime)    | 111.72131147540983 | 105.7948717948718 |  9.181741206584917 |    9.811860404041328 |
+        | 4 (Box Office) |  170.8360655737705 | 116.3076923076923 | 158.10283365875816 |   128.63026447641028 |
+        +----------------+--------------------+-------------------+--------------------+----------------------+
+
+        we use these values for the gaussian naive bayes formula.
      */
     static int gaussianNaiveBayesClassify(double[][] trainingData, int[] trainingLabels, double[] testFeature, boolean[] continuousFeatures)
     {
@@ -261,7 +251,7 @@ public class Tests
         int totalLikeCount = 0;
         int totalDislikeCount = 0;
 
-        // maps of feature i : (feature val, (dis)like count)
+        // hashmaps of feature i : (feature val, (dis)like count)
         Map<Integer, Map<Double, Integer>> likeCount = new HashMap<>();
         Map<Integer, Map<Double, Integer>> dislikeCount = new HashMap<>();
 
@@ -322,8 +312,8 @@ public class Tests
                 // amount of dislikes so far based on current feature value
                 int countingDislikes = dislikeCount.get(i).getOrDefault(testFeature[i], 0);
 
-                likeLikelihood *= (double) countingLikes / trainingData.length;
-                dislikeLikelihood *= (double) countingDislikes / trainingData.length;
+                likeLikelihood *= (double) countingLikes / totalLikeCount;
+                dislikeLikelihood *= (double) countingDislikes / totalDislikeCount;
             }
             else
             {
@@ -448,10 +438,10 @@ public class Tests
 
         for (int i = 0; i < testingData.length; i++)
         {
-            boolean knnClassify = testingKnn && knnClassify(trainingData, trainingLabels, testingData[i], 1) == testingLabels[i];
+            boolean knnClassify = testingKnn && knnClassify(trainingData, trainingLabels, testingData[i], 11) == testingLabels[i];
             boolean simpleProbabilities = testingSimpleModel && simpleProbabilityModel(trainingData, trainingLabels, testingData[i]) == testingLabels[i];
             boolean naiveBayesClassify = testingNaiveBayes && gaussianNaiveBayesClassify(trainingData, trainingLabels, testingData[i], new boolean[] { false, false }) == testingLabels[i]; // we set all of continuousFeatures array to false so we can use the classical naive bayes calculations
-            boolean gaussianNaiveBayesClassify = testingGaussianNaiveBayes && gaussianNaiveBayesClassify(trainingData, trainingLabels, testingData[i], new boolean[] { true, false, true, true, true }) == testingLabels[i]; // e.g. imdb is continuous, genre is not, hence it'll be { true, false }
+            boolean gaussianNaiveBayesClassify = testingGaussianNaiveBayes && gaussianNaiveBayesClassify(trainingData, trainingLabels, testingData[i], new boolean[] { false, false, true, true, true }) == testingLabels[i]; // e.g. imdb is continuous, genre is not, hence it'll be { true, false }
 
             if (knnClassify) knnCorrectPredictions++;
             if (simpleProbabilities) simpleProbCorrectPredictions++;
