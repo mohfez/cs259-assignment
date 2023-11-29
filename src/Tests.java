@@ -70,7 +70,7 @@ public class Tests
             // best k value is chosen using sqrt(n) and +/- 1 if it's even, so sqrt(100) = 10 - 1 = 9 or 10 + 1 = 11
             boolean knnClassify = knn.knnClassify(i, 11) == knn.testingLabels[i];
             boolean simpleProbabilitiesClassify = simpleProbabilities.simpleProbabilityModel(i) == simpleProbabilities.testingLabels[i];
-            boolean naiveBayesClassify = naiveBayes.gaussianNaiveBayesClassify(i, new boolean[] { false, false }) == naiveBayes.testingLabels[i]; // we set all of continuousFeatures array to false so we can use the classical naive bayes calculations
+            boolean naiveBayesClassify = naiveBayes.gaussianNaiveBayesClassify(i, new boolean[] { false }) == naiveBayes.testingLabels[i]; // we set all of continuousFeatures array to false so we can use the classical naive bayes calculations
             boolean gaussianNaiveBayesClassify = gaussianNaiveBayes.gaussianNaiveBayesClassify(i, new boolean[] { false, false, true, true, true }) == gaussianNaiveBayes.testingLabels[i]; // e.g. imdb is continuous, genre is not, hence it'll be { true, false }
 
             if (knnClassify) knnCorrectPredictions++;
