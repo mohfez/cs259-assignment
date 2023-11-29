@@ -1,80 +1,10 @@
-//in progress creating template for the project (movie dataset reading, masking, KNN for K=1)
+import prediction.*;
+
 import java.io.*;
-import java.util.SplittableRandom;
 
 public class Tests
 {
-    static void Assert (boolean res) // We use this to test our results - don't delete or modify!
-    {
-        if (!res)
-        {
-            System.out.print("Something went wrong.");
-            System.exit(0);
-        }
-    }
-
-    static double dot(double[] U, double[] V)
-    {
-        double ans = 0;
-        for (int i = 0; i < V.length; i++)
-        {
-            ans += U[i] * V[i];
-        }
-
-        return ans;
-    }
-
-    static int NumberOfFeatures = 2;
-    static double[] toFeatureVector(double id, String genre, double runtime, double year, double imdb, double rt, double budget, double boxOffice)
-    {
-        double[] feature = new double[NumberOfFeatures];
-        feature[0] = id;  // We use the movie id as a numeric attribute.
-
-        switch (genre)
-        {
-            // We also use represent each movie genre as an integer number:
-            case "Action":  feature[1] = 0; break;
-            case "Drama":   feature[1] = 1; break;
-            case "Romance": feature[1] = 2; break;
-            case "Sci-Fi": feature[1] = 3; break;
-            case "Adventure": feature[1] = 4; break;
-            case "Horror": feature[1] = 5; break;
-            case "Mystery": feature[1] = 6; break;
-            case "Thriller": feature[1] = 7; break;
-
-        }
-
-        // That is all. We don't use any other attributes for prediction.
-        return feature;
-    }
-
-    // We are using the dot product to determine similarity:
-    static double similarity(double[] u, double[] v)
-    {
-        return dot(u, v);
-    }
-
-    // We have implemented KNN classifier for the K=1 case only. You are welcome to modify it to support any K
-    static int knnClassify(double[][] trainingData, int[] trainingLabels, double[] testFeature)
-    {
-        int bestMatch = -1;
-        double bestSimilarity = - Double.MAX_VALUE;  // We start with the worst similarity that we can get in Java.
-
-        for (int i = 0; i < trainingData.length; i++)
-        {
-            double currentSimilarity = similarity(testFeature, trainingData[i]);
-            if (currentSimilarity > bestSimilarity)
-            {
-                bestSimilarity = currentSimilarity;
-                bestMatch = i;
-            }
-        }
-
-        return trainingLabels[bestMatch];
-    }
-
-
-    static void loadData(String filePath, double[][] dataFeatures, int[] dataLabels) throws IOException
+    static void loadData(String filePath, double[][] dataFeatures, int[] dataLabels, PredictionModel model) throws IOException
     {
         try (BufferedReader br = new BufferedReader(new FileReader(filePath)))
         {
@@ -94,7 +24,7 @@ public class Tests
                 double budget = Double.parseDouble(values[9]);
                 double boxOffice = Double.parseDouble(values[10]);
 
-                dataFeatures[idx] = toFeatureVector(id, genre, runtime, year, imdb, rt, budget, boxOffice);
+                dataFeatures[idx] = model.toFeatureVector(id, genre, runtime, year, imdb, rt, budget, boxOffice);
                 dataLabels[idx] = Integer.parseInt(values[11]); // Assuming the label is the last column and is numeric
                 idx++;
             }
@@ -103,16 +33,30 @@ public class Tests
 
     public static void main(String[] args)
     {
+        // Compute accuracy on the testing set
+        int knnCorrectPredictions = 0;
+        int simpleProbCorrectPredictions = 0;
+        int bayesCorrectPredictions = 0;
+        int gaussianBayesCorrectPredictions = 0;
 
-        double[][] trainingData = new double[100][];
-        int[] trainingLabels = new int[100];
-        double[][] testingData = new double[100][];
-        int[] testingLabels = new int[100];
+        KNN knn = new KNN();
+        NaiveBayes naiveBayes = new NaiveBayes();
+        GaussianNaiveBayes gaussianNaiveBayes = new GaussianNaiveBayes();
+        SimpleProbabilities simpleProbabilities = new SimpleProbabilities();
+
         try
         {
-            // You may need to change the path:
-            loadData("src/data/training-set.csv", trainingData, trainingLabels);
-            loadData("src/data/testing-set.csv", testingData, testingLabels);
+            loadData("src/data/training-set.csv", knn.trainingData, knn.trainingLabels, knn);
+            loadData("src/data/testing-set.csv", knn.testingData, knn.testingLabels, knn);
+
+            loadData("src/data/training-set.csv", naiveBayes.trainingData, naiveBayes.trainingLabels, naiveBayes);
+            loadData("src/data/testing-set.csv", naiveBayes.testingData, naiveBayes.testingLabels, naiveBayes);
+
+            loadData("src/data/training-set.csv", gaussianNaiveBayes.trainingData, gaussianNaiveBayes.trainingLabels, gaussianNaiveBayes);
+            loadData("src/data/testing-set.csv", gaussianNaiveBayes.testingData, gaussianNaiveBayes.testingLabels, gaussianNaiveBayes);
+
+            loadData("src/data/training-set.csv", simpleProbabilities.trainingData, simpleProbabilities.trainingLabels, simpleProbabilities);
+            loadData("src/data/testing-set.csv", simpleProbabilities.testingData, simpleProbabilities.testingLabels, simpleProbabilities);
         }
         catch (IOException e)
         {
@@ -120,14 +64,28 @@ public class Tests
             return;
         }
 
-        // Compute accuracy on the testing set
-        int correctPredictions = 0;
-        for (int i = 0; i < 100; i++)
+        int dataLength = knn.testingData.length; // all lengths are the same anyway
+        for (int i = 0; i < dataLength; i++)
         {
-            if (knnClassify(trainingData, trainingLabels, testingData[i]) == testingLabels[i]) correctPredictions++;
+            // best k value is chosen using sqrt(n) and +/- 1 if it's even, so sqrt(100) = 10 - 1 = 9 or 10 + 1 = 11
+            boolean knnClassify = knn.knnClassify(i, 11) == knn.testingLabels[i];
+            boolean simpleProbabilitiesClassify = simpleProbabilities.simpleProbabilityModel(i) == simpleProbabilities.testingLabels[i];
+            boolean naiveBayesClassify = naiveBayes.gaussianNaiveBayesClassify(i, new boolean[] { false }) == naiveBayes.testingLabels[i]; // we set all of continuousFeatures array to false so we can use the classical naive bayes calculations
+            boolean gaussianNaiveBayesClassify = gaussianNaiveBayes.gaussianNaiveBayesClassify(i, new boolean[] { false, false, true, true, true }) == gaussianNaiveBayes.testingLabels[i]; // e.g. imdb is continuous, genre is not, hence it'll be { true, false }
+
+            if (knnClassify) knnCorrectPredictions++;
+            if (simpleProbabilitiesClassify) simpleProbCorrectPredictions++;
+            if (naiveBayesClassify) bayesCorrectPredictions++;
+            if (gaussianNaiveBayesClassify) gaussianBayesCorrectPredictions++;
         }
 
-        double accuracy = (double) correctPredictions / testingData.length * 100;
-        System.out.printf("A: %.2f%%\n", accuracy);
+        double knnAccuracy = (double) knnCorrectPredictions / dataLength * 100;
+        double simpleProbAccuracy = (double) simpleProbCorrectPredictions / dataLength * 100;
+        double bayesAccuracy = (double) bayesCorrectPredictions / dataLength * 100;
+        double gaussianBayesAccuracy = (double) gaussianBayesCorrectPredictions / dataLength * 100;
+        System.out.printf("KNN Accuracy: %.2f%%\n", knnAccuracy);
+        System.out.printf("Simple Prediction Model Accuracy: %.2f%%\n", simpleProbAccuracy);
+        System.out.printf("Naive Bayes Accuracy: %.2f%%\n", bayesAccuracy);
+        System.out.printf("Gaussian Naive Bayes Accuracy: %.2f%%\n", gaussianBayesAccuracy);
     }
 }
