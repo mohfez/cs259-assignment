@@ -38,6 +38,7 @@ public class Tests
         int simpleProbCorrectPredictions = 0;
         int bayesCorrectPredictions = 0;
         int gaussianBayesCorrectPredictions = 0;
+        int combinedPredictions = 0;
 
         KNN knn = new KNN();
         NaiveBayes naiveBayes = new NaiveBayes();
@@ -77,15 +78,18 @@ public class Tests
             if (simpleProbabilitiesClassify) simpleProbCorrectPredictions++;
             if (naiveBayesClassify) bayesCorrectPredictions++;
             if (gaussianNaiveBayesClassify) gaussianBayesCorrectPredictions++;
+            if (knnClassify || simpleProbabilitiesClassify || naiveBayesClassify || gaussianNaiveBayesClassify) combinedPredictions++;
         }
 
         double knnAccuracy = (double) knnCorrectPredictions / dataLength * 100;
         double simpleProbAccuracy = (double) simpleProbCorrectPredictions / dataLength * 100;
         double bayesAccuracy = (double) bayesCorrectPredictions / dataLength * 100;
         double gaussianBayesAccuracy = (double) gaussianBayesCorrectPredictions / dataLength * 100;
+        double combinedAccuracy = (double) combinedPredictions / dataLength * 100;
         System.out.printf("KNN Accuracy: %.2f%%\n", knnAccuracy);
         System.out.printf("Simple Prediction Model Accuracy: %.2f%%\n", simpleProbAccuracy);
         System.out.printf("Naive Bayes Accuracy: %.2f%%\n", bayesAccuracy);
         System.out.printf("Gaussian Naive Bayes Accuracy: %.2f%%\n", gaussianBayesAccuracy);
+        System.out.printf("Combined Accuracy: %.2f%%\n", combinedAccuracy);
     }
 }
