@@ -36,7 +36,7 @@ public class GaussianNaiveBayes extends PredictionModel
 
         Note: set all continuousFeatures array to false if you want to use the classical naive bayes model
 
-        The first part of the code makes tables using hashsets, for example let's use genre and year as our features:
+        The first part of the code makes tables using hashmaps, for example let's use genre and year as our features:
 
         ["likeCount" hashmap]
         +-------------------+---------------+---------+
